@@ -1,0 +1,161 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// auth tables -----------------------------------------------------------------
+
+model VisitorUser {
+  id        Int      @id @default(autoincrement())
+  name      String?  @db.VarChar(70)
+  email     String   @unique @db.VarChar(255)
+  number    String?  @unique @db.VarChar(10)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StoreOwnerUser {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(70)
+  email     String   @unique @db.VarChar(255)
+  number    String   @unique @db.VarChar(10)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  stores    Store[]
+}
+
+model Otp {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique @db.VarChar(255)
+  otp       Int
+  createdAt DateTime @default(now())
+}
+
+model OwnerVerifiedEmail {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model VisitorVerifiedEmail {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+// --------------------------------------------------------------------------------------
+
+// store or shop tables ------------------------------------------------------------------
+model Store {
+  id                Int                @id @default(autoincrement())
+  slug              String             @unique
+  name              String             @db.VarChar(50)
+  tagline           String             @db.VarChar(70)
+  logo              String             @db.VarChar(255)
+  number            String             @db.VarChar(10)
+  whatsappNumber    String             @db.VarChar(10)
+  Email             String             @db.VarChar(255)
+  categoryId        Int
+  bio               String             @db.VarChar(255)
+  feedbackLink      String?            @db.VarChar(255)
+  upiId             String?            @db.VarChar(255)
+  storeOwnerUserId  Int
+  isActive          Boolean
+  storeOwnerUser    StoreOwnerUser     @relation(fields: [storeOwnerUserId], references: [id])
+  category          Category           @relation(fields: [categoryId], references: [id])
+  storeServices     StoreService[]
+  storeAddresses    StoreAddress[]
+  storeSocialMedias StoreSocialMedia[]
+  storePhotos       StorePhoto[]
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @db.VarChar(50)
+  stores   Store[]
+  services Service[]
+}
+
+model Service {
+  id            Int            @id @default(autoincrement())
+  name          String         @db.VarChar(50)
+  categoryId    Int
+  category      Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  storeServices StoreService[]
+}
+
+model StoreService {
+  id        Int     @id @default(autoincrement())
+  storeId   Int
+  serviceId Int
+  index     Int
+  store     Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+model State {
+  id             Int            @id @default(autoincrement())
+  name           String         @db.VarChar(50)
+  city           City[]
+  storeAddresses StoreAddress[]
+}
+
+model City {
+  id             Int            @id @default(autoincrement())
+  name           String         @db.VarChar(50)
+  stateId        Int
+  state          State          @relation(fields: [stateId], references: [id], onDelete: Cascade)
+  storeAddresses StoreAddress[]
+}
+
+model StoreAddress {
+  id            Int    @id @default(autoincrement())
+  storeId       Int
+  store         Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  addressLine   String @db.VarChar(255)
+  stateId       Int
+  cityId        Int
+  state         State  @relation(fields: [stateId], references: [id])
+  city          City   @relation(fields: [cityId], references: [id])
+  latitude      Float // Latitude (e.g., 40.7128)
+  longitude     Float // Longitude (e.g., -74.0060)
+  googleMapLink String @db.VarChar(255)
+}
+
+model SocialMedia {
+  id                Int                @id @default(autoincrement())
+  name              String             @db.VarChar(30)
+  icon              String             @db.VarChar(255)
+  storeSocialMedias StoreSocialMedia[]
+}
+
+model StoreSocialMedia {
+  id            Int         @id @default(autoincrement())
+  SocialMediaId Int
+  storeId       Int
+  link          String      @db.VarChar(255)
+  index         Int
+  store         Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  socialMedia   SocialMedia @relation(fields: [SocialMediaId], references: [id])
+}
+
+model StorePhoto {
+  id      Int    @id @default(autoincrement())
+  storeId Int
+  path    String @db.VarChar(255)
+  index   Int
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+}
+
+// --------------------------------------------------------------------------------------
