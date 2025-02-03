@@ -11,7 +11,7 @@ interface userDetails {
   updatedAt: Date;
 }
 
-interface TokenType extends userDetails {
+export interface TokenType extends userDetails {
   roles: string[];
 }
 

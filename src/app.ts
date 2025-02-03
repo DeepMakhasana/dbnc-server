@@ -8,13 +8,7 @@ import config from "./config";
 import authRouter from "./features/auth/routes";
 import utilsRouter from "./features/utils/routes";
 import storeRouter from "./features/store/routes";
-
-// import courseRouter from "./dashboard/course/course.routes";
-// import s3Router from "./services/s3/s3.routes";
-// import publicCourseRouter from "./public/course.routes";
-// import purchaseRouter from "./purchase/purchase.routes";
-// import progressRouter from "./dashboard/progress/progress.routes";
-// import learnRouter from "./dashboard/learn/learn.routes";
+import s3Router from "./services/s3";
 
 const app = express();
 
@@ -43,21 +37,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.get("/api", (req, res, next) => {
-  res.json({ message: "Welcome to Video course platform API.", headers: req.headers });
+  res.json({ message: "Welcome to one profile live API.", headers: req.headers });
 });
 
 app.get("/api/health", (req, res, next) => {
-  res.json({ message: "Good health of Video course platform API.", status: "Ok" });
+  res.json({ message: "Good health of one profile live API.", status: "Ok" });
 });
 
 // use root routes
 app.use("/api/auth", authRouter);
 app.use("/api/utils", utilsRouter);
 app.use("/api/store", storeRouter);
-// app.use("/api/purchase", purchaseRouter);
-// app.use("/api/learn", learnRouter);
-// app.use("/api/progress", progressRouter);
-// app.use("/api/s3", s3Router);
+app.use("/api/s3", s3Router);
 
 // Global error handler
 app.use(globalErrorHandel);

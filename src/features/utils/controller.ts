@@ -39,6 +39,32 @@ export async function createStateCity(req: Request, res: Response, next: NextFun
   }
 }
 
+export async function getAllState(req: Request, res: Response, next: NextFunction) {
+  try {
+    const states = await prisma.state.findMany();
+    res.status(200).json(states);
+  } catch (error) {
+    console.log(`Error in OTP verify: ${error}`);
+    return next(createHttpError(400, "Some thing wait wrong in OTP verify."));
+  }
+}
+
+export async function getCityByStateId(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { stateId } = req.params;
+
+    const city = await prisma.city.findMany({
+      where: { stateId: Number(stateId) },
+    });
+    if (!city) return next(createHttpError(400, { message: "No cities found for this state." }));
+
+    res.status(200).json(city);
+  } catch (error) {
+    console.log(`Error in OTP verify: ${error}`);
+    return next(createHttpError(400, "Some thing wait wrong in OTP verify."));
+  }
+}
+
 // category ---------------------------------------------------------------------------------------------------
 
 export async function createCategory(req: Request, res: Response, next: NextFunction) {

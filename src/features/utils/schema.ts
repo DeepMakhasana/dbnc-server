@@ -21,6 +21,13 @@ export const stateCitySchema = Joi.object({
     }),
 });
 
+export const stateIdSchema = Joi.object({
+  stateId: Joi.number().integer().required().messages({
+    "any.required": "State ID is required.",
+    "number.base": "State ID must be a valid number.",
+  }),
+});
+
 // ✅ Joi Validation Schema for Category
 export const categorySchema = Joi.object({
   name: Joi.string().max(50).required().messages({

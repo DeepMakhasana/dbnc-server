@@ -5,11 +5,13 @@ import {
   createStateCity,
   getAllCategory,
   getAllServiceByCategory,
+  getAllState,
+  getCityByStateId,
   searchCategory,
   searchService,
 } from "./controller";
 import { validate } from "../../middlewares/validator.middleware";
-import { categorySchema, serviceSchema, stateCitySchema } from "./schema";
+import { categorySchema, serviceSchema, stateCitySchema, stateIdSchema } from "./schema";
 import { authenticationMiddleware } from "../../middlewares/auth.middleware";
 import { USER_TYPE } from "../../utils/constant";
 
@@ -21,6 +23,13 @@ utilsRouter.post(
   authenticationMiddleware([USER_TYPE.owner]),
   validate(stateCitySchema),
   createStateCity
+);
+utilsRouter.get("/state", authenticationMiddleware([USER_TYPE.owner]), getAllState);
+utilsRouter.get(
+  "/city/:stateId",
+  authenticationMiddleware([USER_TYPE.owner]),
+  validate(stateIdSchema, "params"),
+  getCityByStateId
 );
 // business category
 utilsRouter.post("/category", authenticationMiddleware([USER_TYPE.owner]), validate(categorySchema), createCategory);

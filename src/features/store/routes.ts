@@ -19,12 +19,4 @@ storeRouter.put(
 );
 storeRouter.delete("/:id", authenticationMiddleware([USER_TYPE.owner]), validate(idSchema, "params"), deleteStoreById);
 
-// services CRUD with reordering
-
-// address CRUD with reordering
-
-// social media link CRUD with reordering
-
-// photos CRUD with reordering
-
 export default storeRouter;
