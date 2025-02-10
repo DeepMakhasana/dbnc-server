@@ -5,13 +5,16 @@ import {
   createStateCity,
   getAllCategory,
   getAllServiceByCategory,
+  getAllSocialMedia,
   getAllState,
   getCityByStateId,
   searchCategory,
   searchService,
+  suggestProfileBio,
+  suggestServicesByCategory,
 } from "./controller";
 import { validate } from "../../middlewares/validator.middleware";
-import { categorySchema, serviceSchema, stateCitySchema, stateIdSchema } from "./schema";
+import { categorySchema, profileBioSchema, serviceSchema, stateCitySchema, stateIdSchema } from "./schema";
 import { authenticationMiddleware } from "../../middlewares/auth.middleware";
 import { USER_TYPE } from "../../utils/constant";
 
@@ -39,5 +42,17 @@ utilsRouter.get("/category/search", authenticationMiddleware([USER_TYPE.owner]),
 utilsRouter.post("/service", authenticationMiddleware([USER_TYPE.owner]), validate(serviceSchema), createService);
 utilsRouter.get("/service/:categoryId", authenticationMiddleware([USER_TYPE.owner]), getAllServiceByCategory);
 utilsRouter.get("/service/search", authenticationMiddleware([USER_TYPE.owner]), searchService);
+
+// openai route
+utilsRouter.get("/suggestServicesByCategory", authenticationMiddleware([USER_TYPE.owner]), suggestServicesByCategory);
+utilsRouter.post(
+  "/suggestProfileBio",
+  authenticationMiddleware([USER_TYPE.owner]),
+  validate(profileBioSchema),
+  suggestProfileBio
+);
+
+// social medial
+utilsRouter.get("/social-media", authenticationMiddleware([USER_TYPE.owner]), getAllSocialMedia);
 
 export default utilsRouter;

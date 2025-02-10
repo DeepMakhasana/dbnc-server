@@ -15,13 +15,13 @@ export const generateOTP = (): number => {
   return Math.floor(100000 + Math.random() * 900000);
 };
 
-export const sendVerificationEmail = async (to: string, otp: number): Promise<Boolean> => {
+export const sendVerificationOTPEmail = async (to: string, otp: number): Promise<Boolean> => {
   const mailOptions = {
     from: `"one profile" <${config.email}>`,
     to,
-    subject: "Email Verification from one profile",
+    subject: "Email Verification from Bliveprofile",
     html: `<div>
-        <h1>One Profile Email Verification</h1>
+        <h1>Bliveprofile Email Verification</h1>
         <p>Verification code: ${otp}</p>
         <p>verify your email using above one time password</p>
         </div>`,

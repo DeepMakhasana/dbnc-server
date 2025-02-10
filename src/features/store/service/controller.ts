@@ -8,8 +8,8 @@ export async function createService(req: Request, res: Response, next: NextFunct
   try {
     const value = req.body;
 
-    const service = await prisma.service.create({ data: value });
-    res.status(201).json({ message: "Service added successfully.", service });
+    const service = await prisma.storeService.createManyAndReturn({ data: value });
+    res.status(201).json(service);
   } catch (error) {
     console.log(`Error in create store service: ${error}`);
     return next(createHttpError(400, "Some thing wait wrong in create store service."));

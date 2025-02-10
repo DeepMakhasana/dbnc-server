@@ -1,5 +1,5 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import express, { NextFunction, Request, Response } from "express";
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import config from "../config";
 import createHttpError from "http-errors";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -23,14 +23,13 @@ type fileType = {
 
 interface IPutMultipleObject {
   files: fileType[];
-  bucket: string;
 }
 
-const generateMultiplePresignedUrls = async (bucket: string, keys: Array<fileType>) => {
+const generateMultiplePresignedUrls = async (keys: Array<fileType>) => {
   return Promise.all(
     keys.map(async (key) => {
       const command = new PutObjectCommand({
-        Bucket: bucket,
+        Bucket: config.awsS3Bucket as string,
         Key: key.key,
       });
       const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // 1-hours expiration
@@ -41,13 +40,13 @@ const generateMultiplePresignedUrls = async (bucket: string, keys: Array<fileTyp
 
 export async function putMultipleObjectPresignedUrl(req: Request, res: Response, next: NextFunction) {
   try {
-    const { files, bucket } = req.body as IPutMultipleObject;
+    const { files } = req.body as IPutMultipleObject;
     // input validation
-    if (!Array.isArray(files) || !bucket) return next(createHttpError(400, "Enter file name and type correctly."));
+    if (!Array.isArray(files)) return next(createHttpError(400, "Enter file name and type correctly."));
 
-    const presignedUrls = await generateMultiplePresignedUrls(bucket, files);
+    const presignedUrls = await generateMultiplePresignedUrls(files);
 
-    res.status(200).json({ presignedUrls });
+    res.status(200).json(presignedUrls);
   } catch (error) {
     console.log(error);
     return next(createHttpError(400, "some thing wait wrong in s3 getObject presigned url."));
@@ -56,12 +55,12 @@ export async function putMultipleObjectPresignedUrl(req: Request, res: Response,
 
 export async function putObjectPresignedUrl(req: Request, res: Response, next: NextFunction) {
   try {
-    const { fileName, fileType, bucket } = req.body;
+    const { fileName, fileType } = req.body;
     // input validation
-    if (!fileName || !fileType || !bucket) return next(createHttpError(400, "Enter file name and type correctly."));
+    if (!fileName || !fileType) return next(createHttpError(400, "Enter file name and type correctly."));
 
     const command = new PutObjectCommand({
-      Bucket: bucket,
+      Bucket: config.awsS3Bucket as string,
       Key: fileName,
       ContentType: fileType,
     });
@@ -75,11 +74,31 @@ export async function putObjectPresignedUrl(req: Request, res: Response, next: N
   }
 }
 
+export async function deleteObject(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { key } = req.body;
+    // input validation
+    if (!key) return next(createHttpError(400, "Enter file name (key) correctly."));
+
+    const command = new DeleteObjectCommand({
+      Bucket: config.awsS3Bucket as string,
+      Key: key,
+    });
+    await s3Client.send(command);
+
+    res.status(200).json({ message: "File deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    return next(error);
+  }
+}
+
 s3Router.post("/putObjectPresignedUrl", authenticationMiddleware([USER_TYPE.owner]), putObjectPresignedUrl);
 s3Router.post(
   "/putMultipleObjectPresignedUrl",
   authenticationMiddleware([USER_TYPE.owner]),
   putMultipleObjectPresignedUrl
 );
+s3Router.delete("/deleteObject", authenticationMiddleware([USER_TYPE.owner]), deleteObject);
 
 export default s3Router;

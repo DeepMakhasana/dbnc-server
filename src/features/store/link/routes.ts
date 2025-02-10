@@ -1,5 +1,5 @@
-import storeRouter from "../routes";
-import { createLink, deleteStoreLink, getAllLinkByStore, reorderStoreLink, updateLink } from "./controller";
+import express from "express";
+import { createManyLink, deleteStoreLink, getAllLinkByStore, reorderStoreLink, updateLink } from "./controller";
 import { validate } from "../../../middlewares/validator.middleware";
 import { authenticationMiddleware } from "../../../middlewares/auth.middleware";
 import { USER_TYPE } from "../../../utils/constant";
@@ -10,25 +10,34 @@ import {
   storeSocialMediaUpdateSchema,
 } from "./schema";
 
+const storeLinkRouter = express.Router();
+
 // social media link
-storeRouter.post("/link", authenticationMiddleware([USER_TYPE.owner]), validate(storeSocialMediaSchema), createLink);
-storeRouter.get(
-  "/link/:storeId",
+storeLinkRouter.post(
+  "/",
+  authenticationMiddleware([USER_TYPE.owner]),
+  validate(storeSocialMediaSchema),
+  createManyLink
+);
+storeLinkRouter.get(
+  "/:storeId",
   authenticationMiddleware([USER_TYPE.owner, USER_TYPE.visitor]),
   validate(storeIdSchema, "params"),
   getAllLinkByStore
 );
-storeRouter.put(
-  "/link/:storeSocialMediaId",
+storeLinkRouter.put(
+  "/:storeSocialMediaId",
   authenticationMiddleware([USER_TYPE.owner]),
   validate(storeSocialMediaIdSchema, "params"),
   validate(storeSocialMediaUpdateSchema),
   updateLink
 );
-storeRouter.put("/link/reorder", authenticationMiddleware([USER_TYPE.owner]), reorderStoreLink);
-storeRouter.delete(
-  "/link/:storeSocialMediaId",
+storeLinkRouter.put("/reorder", authenticationMiddleware([USER_TYPE.owner]), reorderStoreLink);
+storeLinkRouter.delete(
+  "/:storeSocialMediaId",
   authenticationMiddleware([USER_TYPE.owner]),
   validate(storeSocialMediaIdSchema, "params"),
   deleteStoreLink
 );
+
+export default storeLinkRouter;

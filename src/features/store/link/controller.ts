@@ -4,12 +4,12 @@ import prisma from "../../../config/prisma";
 
 // store links -------------------------------------------------------------------------------------------------
 
-export async function createLink(req: Request, res: Response, next: NextFunction) {
+export async function createManyLink(req: Request, res: Response, next: NextFunction) {
   try {
     const value = req.body;
 
-    const storeSocialMedia = await prisma.storeSocialMedia.create({ data: value });
-    res.status(201).json({ message: "Store Social Media link added successfully.", storeSocialMedia });
+    const storeSocialMedias = await prisma.storeSocialMedia.createManyAndReturn({ data: value });
+    res.status(201).json(storeSocialMedias);
   } catch (error) {
     console.log(`Error in create store link: ${error}`);
     return next(createHttpError(400, "Some thing wait wrong in create store link."));

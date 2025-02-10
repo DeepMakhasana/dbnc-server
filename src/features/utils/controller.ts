@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../config/prisma";
+import { getAIResponse } from "../../services/openai";
 
 export async function createStateCity(req: Request, res: Response, next: NextFunction) {
   try {
@@ -55,6 +56,10 @@ export async function getCityByStateId(req: Request, res: Response, next: NextFu
 
     const city = await prisma.city.findMany({
       where: { stateId: Number(stateId) },
+      select: {
+        id: true,
+        name: true,
+      },
     });
     if (!city) return next(createHttpError(400, { message: "No cities found for this state." }));
 
@@ -114,7 +119,7 @@ export async function createService(req: Request, res: Response, next: NextFunct
     const value = req.body;
 
     const service = await prisma.service.create({ data: value });
-    res.status(201).json({ message: "Service added successfully.", service });
+    res.status(201).json({ id: service.id, name: service.name });
   } catch (error) {
     console.log(`Error in create service: ${error}`);
     return next(createHttpError(400, "Some thing wait wrong in create service."));
@@ -144,11 +149,122 @@ export async function getAllServiceByCategory(req: Request, res: Response, next:
       where: {
         categoryId: Number(categoryId),
       },
+      select: {
+        id: true,
+        name: true,
+      },
     });
     res.status(200).json(services);
   } catch (error) {
     console.log(`Error in get all services: ${error}`);
     return next(createHttpError(400, "Some thing wait wrong in get all services."));
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+
+// openai suggestion -----------------------------------------------------------------------------------------------------
+export async function suggestServicesByCategory(req: Request, res: Response, next: NextFunction) {
+  try {
+    console.log(req.query);
+    const { name, categoryId } = req.query;
+    if (!name || !categoryId)
+      return next(createHttpError(400, "provide business name and category in query parameter and services in body"));
+
+    const businessName = decodeURI(name as string);
+    const id = Number(decodeURI(categoryId as string));
+
+    const categoryWithServicesById = await prisma.category.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        services: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    const oldServices = categoryWithServicesById?.services.map((s) => s.name);
+    // const oldServicesString = oldServices?.join(", ");
+
+    // const servicesString = await getAIResponse(
+    //   `suggest services for \n business name: ${businessName} \n category: ${categoryWithServicesById?.name} ${
+    //     oldServicesString && "\n exclude this services: " + oldServicesString
+    //   } \n return only the services separated by ,`
+    // );
+
+    // const services = servicesString?.split(", ");
+
+    res
+      .status(200)
+      .json([
+        "Jewellery CAD Designing",
+        "CorelDraw for Jewellery Design",
+        "3D Jewellery Modeling",
+        "Rhino for Jewellery Designing",
+        "Matrix Gold Training",
+        "Hand Sketching for Jewellery",
+        "Jewellery Rendering Techniques",
+        "Jewellery Manufacturing Basics",
+        "Diamond & Gemstone Setting Training",
+        "Jewellery Design Certification Courses",
+      ]);
+  } catch (error) {
+    console.error("Error in openai get services by category: ", error);
+    return next(error);
+  }
+}
+
+export async function suggestProfileBio(req: Request, res: Response, next: NextFunction) {
+  const { name, cityId, categoryId, services } = req.body;
+
+  let servicesString;
+  if (Array.isArray(services)) {
+    servicesString = services.join(", ");
+  }
+
+  const city = await prisma.city.findUnique({
+    where: {
+      id: Number(cityId),
+    },
+    select: {
+      name: true,
+    },
+  });
+
+  const category = await prisma.category.findUnique({
+    where: {
+      id: Number(categoryId),
+    },
+    select: {
+      name: true,
+    },
+  });
+
+  if (!servicesString) return next(createHttpError(400, "provide services array"));
+  if (!city || !category) return next(createHttpError(400, "fail to fetch city and category"));
+
+  const bio = await getAIResponse(
+    `I want a 160 character description in simple language for SEO the web page for \n business name: ${name} \n city: ${city?.name} \n category: ${category?.name} \n services: ${services}`
+  );
+
+  res.status(200).json({ bio });
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+
+// social medial -----------------------------------------------------------------------------------------------------
+
+export async function getAllSocialMedia(req: Request, res: Response, next: NextFunction) {
+  try {
+    const socialMedial = await prisma.socialMedia.findMany();
+    res.status(200).json(socialMedial);
+  } catch (error) {
+    console.log(`Error in get all social media: ${error}`);
+    return next(createHttpError(400, "Some thing wait wrong in get all social media."));
   }
 }
 

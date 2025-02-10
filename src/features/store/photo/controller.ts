@@ -15,14 +15,14 @@ export async function createPhotos(req: Request, res: Response, next: NextFuncti
 
     let startIndex = lastPhoto ? lastPhoto.index + 1 : 1;
 
-    const createdPhotos = await prisma.storePhoto.createMany({
+    const createdPhotos = await prisma.storePhoto.createManyAndReturn({
       data: paths.map((path: string, i: number) => ({
         storeId,
         path,
         index: startIndex + i,
       })),
     });
-    res.status(201).json({ message: "Photos added successfully", createdPhotos });
+    res.status(201).json(createdPhotos);
   } catch (error) {
     console.log(`Error in create photos: ${error}`);
     return next(createHttpError(400, "Some thing wait wrong in create photos."));

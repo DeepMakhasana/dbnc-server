@@ -31,7 +31,7 @@ export const storeSchema = Joi.object({
     "string.length": "WhatsApp Number must be exactly 10 digits.",
     "any.required": "WhatsApp Number is required.",
   }),
-  Email: Joi.string().email().max(255).required().messages({
+  email: Joi.string().email().max(255).required().messages({
     "string.email": "Invalid email format.",
     "any.required": "Email is required.",
   }),

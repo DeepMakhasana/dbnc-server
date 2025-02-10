@@ -6,7 +6,7 @@ export const storePhotoSchema = Joi.object({
     "any.required": "Store ID is required.",
     "number.base": "Store ID must be a valid number.",
   }),
-  paths: Joi.array().items(Joi.string().uri().required()).min(1).required().messages({
+  paths: Joi.array().items(Joi.string().required()).min(1).required().messages({
     "any.required": "At least one photo is required.",
     "array.min": "You must provide at least one photo URL.",
     "string.uri": "Each photo must be a valid URL.",

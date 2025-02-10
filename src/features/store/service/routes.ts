@@ -1,22 +1,26 @@
-import storeRouter from "../routes";
+import express from "express";
 import { createService, deleteStoreService, getAllServiceByStore, reorderStoreServices } from "./controller";
 import { validate } from "../../../middlewares/validator.middleware";
 import { authenticationMiddleware } from "../../../middlewares/auth.middleware";
 import { USER_TYPE } from "../../../utils/constant";
 import { storeIdSchema, storeServiceIdSchema, storeServiceSchema } from "./schema";
 
-// state and city
-storeRouter.post("/service", authenticationMiddleware([USER_TYPE.owner]), validate(storeServiceSchema), createService);
-storeRouter.get(
-  "/service/:storeId",
+const storeServiceRouter = express.Router();
+
+// store service
+storeServiceRouter.post("/", authenticationMiddleware([USER_TYPE.owner]), validate(storeServiceSchema), createService);
+storeServiceRouter.get(
+  "/:storeId",
   authenticationMiddleware([USER_TYPE.owner, USER_TYPE.visitor]),
   validate(storeIdSchema, "params"),
   getAllServiceByStore
 );
-storeRouter.put("/service/reorder", authenticationMiddleware([USER_TYPE.owner]), reorderStoreServices);
-storeRouter.delete(
-  "/service/:storeServiceId",
+storeServiceRouter.put("/reorder", authenticationMiddleware([USER_TYPE.owner]), reorderStoreServices);
+storeServiceRouter.delete(
+  "/:storeServiceId",
   authenticationMiddleware([USER_TYPE.owner]),
   validate(storeServiceIdSchema, "params"),
   deleteStoreService
 );
+
+export default storeServiceRouter;

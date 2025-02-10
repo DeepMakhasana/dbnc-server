@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
-import { generateOTP } from "../../services/email";
+import { generateOTP, sendVerificationOTPEmail } from "../../services/email";
 import prisma from "../../config/prisma";
 import { generateToken } from "../../utils/jwt";
 import { USER_TYPE } from "../../utils/constant";
@@ -9,6 +9,10 @@ export async function sendVerificationEmail(req: Request, res: Response, next: N
   try {
     const { email } = req.body;
     const otp = generateOTP();
+
+    const isSendedEmail = sendVerificationOTPEmail(email, otp);
+
+    if (!isSendedEmail) return next(createHttpError(400, "Fail to send verification email, try again"));
 
     await prisma.$transaction(async (prismaTransaction) => {
       // first check otp is exist in db
@@ -48,6 +52,8 @@ export async function verifyEmailOTP(req: Request, res: Response, next: NextFunc
   try {
     const { email, otp, userType } = req.body;
 
+    let isUserExist;
+
     await prisma.$transaction(async (prismaTransaction) => {
       // Retrieve the OTP from the database
       const verifyOtp = await prismaTransaction.otp.findUnique({
@@ -69,21 +75,40 @@ export async function verifyEmailOTP(req: Request, res: Response, next: NextFunc
       });
 
       if (userType === USER_TYPE.visitor) {
-        await prismaTransaction.visitorVerifiedEmail.create({
-          data: {
+        isUserExist = await prismaTransaction.visitorVerifiedEmail.findUnique({
+          where: {
             email,
           },
         });
+        if (!isUserExist) {
+          await prismaTransaction.visitorVerifiedEmail.create({
+            data: {
+              email,
+            },
+          });
+          await prismaTransaction.visitorUser.create({
+            data: {
+              email,
+            },
+          });
+        }
       } else if (userType === USER_TYPE.owner) {
-        await prismaTransaction.ownerVerifiedEmail.create({
-          data: {
+        isUserExist = await prismaTransaction.ownerVerifiedEmail.findUnique({
+          where: {
             email,
           },
         });
+        if (!isUserExist) {
+          await prismaTransaction.ownerVerifiedEmail.create({
+            data: {
+              email,
+            },
+          });
+        }
       }
     });
 
-    res.status(200).json({ email: email, message: `Email verification successfully` });
+    res.status(200).json({ email: email, message: `Email verification successfully`, isUserExist });
   } catch (error) {
     console.log(`Error in OTP verify: ${error}`);
     return next(createHttpError(400, "Some thing wait wrong in OTP verify."));
@@ -161,6 +186,6 @@ export async function storeOwnerUserRegisterWithEmail(req: Request, res: Respons
     res.status(200).json({ token });
   } catch (error) {
     console.log(`Error in visitor login: ${error}`);
-    return next(createHttpError(400, "Some thing wait wrong in visitor login."));
+    return next(error);
   }
 }

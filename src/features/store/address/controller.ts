@@ -9,7 +9,7 @@ export async function createAddress(req: Request, res: Response, next: NextFunct
     const value = req.body;
 
     const storeAddress = await prisma.storeAddress.create({ data: value });
-    res.status(201).json({ message: "Store Address added successfully.", storeAddress });
+    res.status(201).json(storeAddress);
   } catch (error) {
     console.log(`Error in create store address: ${error}`);
     return next(createHttpError(400, "Some thing wait wrong in create store address."));

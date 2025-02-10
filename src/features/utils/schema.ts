@@ -47,3 +47,37 @@ export const serviceSchema = Joi.object({
     "number.base": "Category ID must be a valid number.",
   }),
 });
+
+// suggest profile schema
+export const profileBioSchema = Joi.object({
+  name: Joi.string().max(50).required().messages({
+    "any.required": "Name is required.",
+    "string.base": "Name must be a string.",
+    "string.empty": "Name cannot be empty.",
+    "string.max": "Name must be at most 50 characters long.",
+  }),
+
+  cityId: Joi.number().integer().required().messages({
+    "any.required": "City ID is required.",
+    "number.base": "City ID must be a valid number.",
+  }),
+
+  categoryId: Joi.number().integer().required().messages({
+    "any.required": "Category ID is required.",
+    "number.base": "Category ID must be a valid number.",
+  }),
+
+  services: Joi.array()
+    .items(
+      Joi.string().required().messages({
+        "string.base": "Each service must be a string.",
+        "string.empty": "Service cannot be empty.",
+      })
+    )
+    .min(1)
+    .required()
+    .messages({
+      "any.required": "At least one service is required.",
+      "array.min": "At least one service must be provided.",
+    }),
+});

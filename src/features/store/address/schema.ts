@@ -31,6 +31,13 @@ export const storeAddressSchema = Joi.object({
     "string.uri": "Google Map Link must be a valid URL.",
     "string.max": "Google Map Link must be at most 255 characters long.",
   }),
+  pincode: Joi.number().integer().min(100000).max(999999).required().messages({
+    "number.base": "Pincode must be a valid number.",
+    "number.integer": "Pincode must be an integer.",
+    "number.min": "Pincode must be exactly 6 digits.",
+    "number.max": "Pincode must be exactly 6 digits.",
+    "any.required": "Pincode is required.",
+  }),
 });
 
 export const storeIdSchema = Joi.object({

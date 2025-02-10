@@ -9,13 +9,17 @@ import authRouter from "./features/auth/routes";
 import utilsRouter from "./features/utils/routes";
 import storeRouter from "./features/store/routes";
 import s3Router from "./services/s3";
+import storeAddressRouter from "./features/store/address/routes";
+import storeLinkRouter from "./features/store/link/routes";
+import storePhotoRouter from "./features/store/photo/routes";
+import storeServiceRouter from "./features/store/service/routes";
 
 const app = express();
 
 // Middleware
 const allowedOrigins: string[] = [
   config.frontendBaseUrl as string,
-  "http://localhost:4173",
+  "http://localhost:5173",
   // "http://127.0.0.1",
   // "http://0.0.0.0",
 ];
@@ -48,6 +52,10 @@ app.get("/api/health", (req, res, next) => {
 app.use("/api/auth", authRouter);
 app.use("/api/utils", utilsRouter);
 app.use("/api/store", storeRouter);
+app.use("/api/store/address", storeAddressRouter);
+app.use("/api/store/link", storeLinkRouter);
+app.use("/api/store/photo", storePhotoRouter);
+app.use("/api/store/service", storeServiceRouter);
 app.use("/api/s3", s3Router);
 
 // Global error handler

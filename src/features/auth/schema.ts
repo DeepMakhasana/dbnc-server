@@ -21,3 +21,29 @@ export const verifyEmailOtpSchema = Joi.object({
     }),
   userType: Joi.string().required().max(20),
 });
+
+export const ownerUserSchema = Joi.object({
+  name: Joi.string().min(2).max(50).required().messages({
+    "any.required": "Name is required.",
+    "string.base": "Name must be a string.",
+    "string.empty": "Name cannot be empty.",
+    "string.min": "Name must be at least 2 characters long.",
+    "string.max": "Name must be at most 50 characters long.",
+  }),
+
+  email: Joi.string().email().required().messages({
+    "any.required": "Email is required.",
+    "string.email": "Email must be a valid email address.",
+    "string.empty": "Email cannot be empty.",
+  }),
+
+  number: Joi.string()
+    .pattern(/^[0-9]{10}$/)
+    .required()
+    .messages({
+      "any.required": "Number is required.",
+      "string.base": "Number must be a string.",
+      "string.pattern.base": "Number must be a 10-digit numeric string.",
+      "string.empty": "Number cannot be empty.",
+    }),
+});

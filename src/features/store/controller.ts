@@ -7,7 +7,7 @@ export async function createStore(req: Request, res: Response, next: NextFunctio
     const value = req.body;
 
     const store = await prisma.store.create({ data: value });
-    res.status(201).json({ message: "Store created successfully.", store });
+    res.status(201).json(store);
   } catch (error) {
     console.log(`Error in Store Create: ${error}`);
     return next(createHttpError(400, "Some thing wait wrong in Store Create."));
