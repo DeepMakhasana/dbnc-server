@@ -1,7 +1,7 @@
 // Import required modules
 // import ServerlessHttp from "serverless-http";
-import app from "./app";
-import config from "./config";
+import app from "./src/app";
+import config from "./src/config";
 
 // Start server
 // if (config.port === "development") {
