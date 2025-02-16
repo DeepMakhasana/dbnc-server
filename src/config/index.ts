@@ -9,7 +9,7 @@ const _config = {
   email: process.env.EMAIL_ADDRESS,
   emailPassword: process.env.EMAIL_PASSWORD,
   jwtSecret: process.env.JWT_SECRET,
-  awsRegion: process.env.AWS_REGION,
+  awsRegion: process.env.AWS_S3_REGION,
   awsS3Bucket: process.env.AWS_S3_BUCKET,
   s3AccessKey: process.env.AWS_S3_ACCESS_KEY,
   s3SecretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
