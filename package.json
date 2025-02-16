@@ -24,7 +24,8 @@
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^6.10.0",
-    "openai": "^4.83.0"
+    "openai": "^4.83.0",
+    "serverless-http": "^3.2.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
