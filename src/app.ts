@@ -21,8 +21,8 @@ const app = express();
 const allowedOrigins: string[] = [
   config.frontendBaseUrl as string,
   "http://localhost:5173",
-  // "http://127.0.0.1",
-  // "http://0.0.0.0",
+  "http://127.0.0.1",
+  "http://0.0.0.0",
 ];
 const corsOptions = {
   origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => {
