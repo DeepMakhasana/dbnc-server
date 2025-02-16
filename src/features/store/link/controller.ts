@@ -25,6 +25,8 @@ export async function getAllLinkByStore(req: Request, res: Response, next: NextF
       orderBy: { index: "asc" },
     });
 
+    console.log("test", storeSocialMedias);
+
     res.status(200).json(storeSocialMedias);
   } catch (error) {
     console.log(`Error in get all store link: ${error}`);

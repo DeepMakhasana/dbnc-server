@@ -19,9 +19,9 @@ export async function createAddress(req: Request, res: Response, next: NextFunct
 export async function getStoreAddressById(req: Request, res: Response, next: NextFunction) {
   try {
     const { storeId } = req.params;
-    const storeAddresses = await prisma.storeAddress.findMany({
+    const storeAddresses = await prisma.storeAddress.findUnique({
       where: { storeId: parseInt(storeId) },
-      include: { state: true, city: true },
+      // include: { state: true, city: true },
     });
 
     res.status(200).json(storeAddresses);
@@ -41,7 +41,7 @@ export async function updateStoreAddress(req: Request, res: Response, next: Next
       data: value,
     });
 
-    res.status(200).json({ message: "Store Address updated successfully.", storeAddress });
+    res.status(200).json(storeAddress);
   } catch (error) {
     console.log(`Error in update store address: ${error}`);
     return next(createHttpError(400, "Some thing wait wrong in update store address."));

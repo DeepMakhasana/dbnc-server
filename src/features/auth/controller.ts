@@ -4,6 +4,7 @@ import { generateOTP, sendVerificationOTPEmail } from "../../services/email";
 import prisma from "../../config/prisma";
 import { generateToken } from "../../utils/jwt";
 import { USER_TYPE } from "../../utils/constant";
+import { RequestWithUser } from "../../middlewares/auth.middleware";
 
 export async function sendVerificationEmail(req: Request, res: Response, next: NextFunction) {
   try {
@@ -86,7 +87,7 @@ export async function verifyEmailOTP(req: Request, res: Response, next: NextFunc
               email,
             },
           });
-          await prismaTransaction.visitorUser.create({
+          isUserExist = await prismaTransaction.visitorUser.create({
             data: {
               email,
             },
@@ -107,6 +108,13 @@ export async function verifyEmailOTP(req: Request, res: Response, next: NextFunc
         }
       }
     });
+
+    // visitor login
+    if (userType === USER_TYPE.visitor && isUserExist) {
+      const token = generateToken(isUserExist, [USER_TYPE.visitor]);
+      res.status(200).json({ email: email, message: `Email verification successfully`, isUserExist, token });
+      return;
+    }
 
     res.status(200).json({ email: email, message: `Email verification successfully`, isUserExist });
   } catch (error) {
@@ -183,6 +191,27 @@ export async function storeOwnerUserRegisterWithEmail(req: Request, res: Respons
     });
     // generate the token
     const token = generateToken(createdStoreOwnerUser, [USER_TYPE.owner]);
+    res.status(200).json({ token });
+  } catch (error) {
+    console.log(`Error in visitor login: ${error}`);
+    return next(error);
+  }
+}
+
+export async function visitorProfileUpdate(req: RequestWithUser, res: Response, next: NextFunction) {
+  try {
+    const { name, number } = req.body;
+    const user = req.user;
+
+    const updateVisitorProfile = await prisma.visitorUser.update({
+      where: { id: user?.id },
+      data: {
+        name,
+        number,
+      },
+    });
+    // generate the token
+    const token = generateToken(updateVisitorProfile, [USER_TYPE.visitor]);
     res.status(200).json({ token });
   } catch (error) {
     console.log(`Error in visitor login: ${error}`);

@@ -3,7 +3,7 @@ import { createService, deleteStoreService, getAllServiceByStore, reorderStoreSe
 import { validate } from "../../../middlewares/validator.middleware";
 import { authenticationMiddleware } from "../../../middlewares/auth.middleware";
 import { USER_TYPE } from "../../../utils/constant";
-import { storeIdSchema, storeServiceIdSchema, storeServiceSchema } from "./schema";
+import { deleteIdsSchema, storeIdSchema, storeServiceSchema } from "./schema";
 
 const storeServiceRouter = express.Router();
 
@@ -17,9 +17,9 @@ storeServiceRouter.get(
 );
 storeServiceRouter.put("/reorder", authenticationMiddleware([USER_TYPE.owner]), reorderStoreServices);
 storeServiceRouter.delete(
-  "/:storeServiceId",
+  "/",
   authenticationMiddleware([USER_TYPE.owner]),
-  validate(storeServiceIdSchema, "params"),
+  validate(deleteIdsSchema),
   deleteStoreService
 );
 

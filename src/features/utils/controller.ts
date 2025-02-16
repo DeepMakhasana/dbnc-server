@@ -77,7 +77,7 @@ export async function createCategory(req: Request, res: Response, next: NextFunc
     const value = req.body;
 
     const category = await prisma.category.create({ data: value });
-    res.status(201).json({ message: "Category added successfully.", category });
+    res.status(201).json(category);
   } catch (error) {
     console.log(`Error in create category: ${error}`);
     return next(createHttpError(400, "Some thing wait wrong in create category."));
@@ -154,6 +154,7 @@ export async function getAllServiceByCategory(req: Request, res: Response, next:
         name: true,
       },
     });
+    console.log("getServicesByCategory: ", services);
     res.status(200).json(services);
   } catch (error) {
     console.log(`Error in get all services: ${error}`);
@@ -269,3 +270,23 @@ export async function getAllSocialMedia(req: Request, res: Response, next: NextF
 }
 
 // ---------------------------------------------------------------------------------------------------------------
+
+export async function getAvailableCities(req: Request, res: Response, next: NextFunction) {
+  try {
+    const availableCities = await prisma.city.findMany({
+      where: {
+        storeAddresses: {
+          some: {}, // Ensures there is at least one store in the city
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+    res.status(200).json(availableCities);
+  } catch (error) {
+    console.log(`Error in get all social media: ${error}`);
+    return next(createHttpError(400, "Some thing wait wrong in get all social media."));
+  }
+}

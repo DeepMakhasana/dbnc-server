@@ -13,6 +13,7 @@ import storeAddressRouter from "./features/store/address/routes";
 import storeLinkRouter from "./features/store/link/routes";
 import storePhotoRouter from "./features/store/photo/routes";
 import storeServiceRouter from "./features/store/service/routes";
+import storeSaveRouter from "./features/store/save/routes";
 
 const app = express();
 
@@ -51,11 +52,12 @@ app.get("/api/health", (req, res, next) => {
 // use root routes
 app.use("/api/auth", authRouter);
 app.use("/api/utils", utilsRouter);
-app.use("/api/store", storeRouter);
 app.use("/api/store/address", storeAddressRouter);
 app.use("/api/store/link", storeLinkRouter);
 app.use("/api/store/photo", storePhotoRouter);
 app.use("/api/store/service", storeServiceRouter);
+app.use("/api/store/save", storeSaveRouter);
+app.use("/api/store", storeRouter);
 app.use("/api/s3", s3Router);
 
 // Global error handler

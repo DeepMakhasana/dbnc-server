@@ -74,22 +74,23 @@ export async function putObjectPresignedUrl(req: Request, res: Response, next: N
   }
 }
 
-export async function deleteObject(req: Request, res: Response, next: NextFunction) {
+export async function deleteObject(key: string) {
   try {
-    const { key } = req.body;
     // input validation
-    if (!key) return next(createHttpError(400, "Enter file name (key) correctly."));
+    if (!key) return false;
 
     const command = new DeleteObjectCommand({
       Bucket: config.awsS3Bucket as string,
       Key: key,
     });
-    await s3Client.send(command);
+    const isDeleted = await s3Client.send(command);
 
-    res.status(200).json({ message: "File deleted successfully" });
+    if (isDeleted) {
+      return true;
+    }
   } catch (error) {
     console.log(error);
-    return next(error);
+    return false;
   }
 }
 
@@ -99,6 +100,6 @@ s3Router.post(
   authenticationMiddleware([USER_TYPE.owner]),
   putMultipleObjectPresignedUrl
 );
-s3Router.delete("/deleteObject", authenticationMiddleware([USER_TYPE.owner]), deleteObject);
+// s3Router.delete("/deleteObject", authenticationMiddleware([USER_TYPE.owner]), deleteObject);
 
 export default s3Router;

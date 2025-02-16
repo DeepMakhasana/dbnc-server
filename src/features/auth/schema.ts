@@ -47,3 +47,22 @@ export const ownerUserSchema = Joi.object({
       "string.empty": "Number cannot be empty.",
     }),
 });
+
+export const visitorUserUpdateSchema = Joi.object({
+  name: Joi.string().max(70).required().messages({
+    "any.required": "Name is required.",
+    "string.base": "Name must be a string.",
+    "string.empty": "Name cannot be empty.",
+    "string.max": "Name must be at most 70 characters long.",
+  }),
+
+  number: Joi.string()
+    .pattern(/^[0-9]{10}$/)
+    .required()
+    .messages({
+      "any.required": "Number is required.",
+      "string.base": "Number must be a string.",
+      "string.pattern.base": "Number must be a valid 10-digit numeric string.",
+      "string.empty": "Number cannot be empty.",
+    }),
+});

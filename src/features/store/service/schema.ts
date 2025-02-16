@@ -25,9 +25,6 @@ export const storeIdSchema = Joi.object({
   }),
 });
 
-export const storeServiceIdSchema = Joi.object({
-  storeServiceId: Joi.number().integer().required().messages({
-    "any.required": "Store service ID is required.",
-    "number.base": "Store service ID must be a valid number.",
-  }),
+export const deleteIdsSchema = Joi.object({
+  deleteIds: Joi.array().items(Joi.number().integer().positive().required()).min(1).required(),
 });

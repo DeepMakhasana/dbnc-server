@@ -7,6 +7,7 @@ import {
   getAllServiceByCategory,
   getAllSocialMedia,
   getAllState,
+  getAvailableCities,
   getCityByStateId,
   searchCategory,
   searchService,
@@ -54,5 +55,8 @@ utilsRouter.post(
 
 // social medial
 utilsRouter.get("/social-media", authenticationMiddleware([USER_TYPE.owner]), getAllSocialMedia);
+
+// Get Cities That Have At Least One Store
+utilsRouter.get("/available-cities", getAvailableCities);
 
 export default utilsRouter;

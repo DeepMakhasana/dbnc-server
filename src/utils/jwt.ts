@@ -28,11 +28,6 @@ export const verifyToken = (token: string): TokenType => {
     // Verify the token
     const decoded = jwt.verify(token, config.jwtSecret) as TokenType;
 
-    // Optional: Validate the presence of essential fields in the payload
-    if (!decoded.id || !decoded.email || !decoded.roles || !decoded.createdAt || !decoded.updatedAt) {
-      throw createHttpError(400, "Invalid token payload");
-    }
-
     return decoded; // Return the validated payload
   } catch (error: any) {
     // Handle token errors

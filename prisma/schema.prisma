@@ -17,12 +17,13 @@ datasource db {
 // auth tables -----------------------------------------------------------------
 
 model VisitorUser {
-  id        Int      @id @default(autoincrement())
-  name      String?  @db.VarChar(70)
-  email     String   @unique @db.VarChar(255)
-  number    String?  @unique @db.VarChar(10)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int         @id @default(autoincrement())
+  name       String?     @db.VarChar(70)
+  email      String      @unique @db.VarChar(255)
+  number     String?     @unique @db.VarChar(10)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  saveStores SaveStore[]
 }
 
 model StoreOwnerUser {
@@ -61,6 +62,7 @@ model Store {
   id                Int                @id @default(autoincrement())
   slug              String             @unique
   name              String             @db.VarChar(50)
+  isOpen            Boolean            @default(true)
   tagline           String             @db.VarChar(70)
   logo              String             @db.VarChar(255)
   number            String             @db.VarChar(10)
@@ -72,14 +74,27 @@ model Store {
   upiId             String?            @db.VarChar(255)
   storeOwnerUserId  Int
   isActive          Boolean            @default(true)
+  secret            String?
   storeOwnerUser    StoreOwnerUser     @relation(fields: [storeOwnerUserId], references: [id])
   category          Category           @relation(fields: [categoryId], references: [id])
   storeServices     StoreService[]
-  storeAddresses    StoreAddress[]
+  storeAddresses    StoreAddress?
   storeSocialMedias StoreSocialMedia[]
   storePhotos       StorePhoto[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+  saveStores        SaveStore[]
+}
+
+model SaveStore {
+  id          Int         @id @default(autoincrement())
+  userId      Int
+  storeId     Int
+  visitorUser VisitorUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store       Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdAt   DateTime    @default(now())
+
+  @@unique([userId, storeId])
 }
 
 model Category {
@@ -123,7 +138,7 @@ model City {
 
 model StoreAddress {
   id            Int    @id @default(autoincrement())
-  storeId       Int
+  storeId       Int    @unique
   store         Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
   addressLine   String @db.VarChar(255)
   stateId       Int

@@ -24,10 +24,6 @@ export const storeSocialMediaSchema = Joi.array().items(
 );
 
 export const storeSocialMediaUpdateSchema = Joi.object({
-  SocialMediaId: Joi.number().integer().required().messages({
-    "any.required": "Social Media ID is required.",
-    "number.base": "Social Media ID must be a valid number.",
-  }),
   link: Joi.string().uri().max(255).required().messages({
     "any.required": "Social Media Link is required.",
     "string.uri": "Link must be a valid URL.",

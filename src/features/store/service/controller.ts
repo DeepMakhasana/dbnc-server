@@ -8,7 +8,11 @@ export async function createService(req: Request, res: Response, next: NextFunct
   try {
     const value = req.body;
 
-    const service = await prisma.storeService.createManyAndReturn({ data: value });
+    const service = await prisma.storeService.createManyAndReturn({
+      data: value,
+      include: { service: { select: { name: true } } },
+    });
+    console.log("service", service);
     res.status(201).json(service);
   } catch (error) {
     console.log(`Error in create store service: ${error}`);
@@ -22,7 +26,7 @@ export async function getAllServiceByStore(req: Request, res: Response, next: Ne
     const storeServices = await prisma.storeService.findMany({
       where: { storeId: parseInt(storeId) },
       orderBy: { index: "asc" },
-      include: { service: true },
+      include: { service: { select: { name: true } } },
     });
 
     res.status(200).json(storeServices);
@@ -56,10 +60,15 @@ export async function reorderStoreServices(req: Request, res: Response, next: Ne
 
 export async function deleteStoreService(req: Request, res: Response, next: NextFunction) {
   try {
-    const { storeServiceId } = req.params;
-    const deleteStoreService = await prisma.storeService.delete({ where: { id: parseInt(storeServiceId) } });
+    const { deleteIds } = req.body;
+    const deleteStoreService = await prisma.storeService.deleteMany({
+      where: {
+        id: { in: deleteIds },
+      },
+    });
+    console.log("deleteStoreService", deleteStoreService);
 
-    res.status(200).json({ message: "Store Service deleted successfully.", deleteStoreService });
+    res.status(200).json({ message: "Store Service deleted successfully." });
   } catch (error) {
     console.log(`Error in search services: ${error}`);
     return next(createHttpError(400, "Some thing wait wrong in search services."));

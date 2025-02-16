@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../../config/prisma";
+import { deleteObject } from "../../../services/s3";
 
 // store photo -------------------------------------------------------------------------------------------------
 
@@ -68,12 +69,26 @@ export async function reorderStorePhotos(req: Request, res: Response, next: Next
 
 export async function deleteStorePhoto(req: Request, res: Response, next: NextFunction) {
   try {
-    const { photoId } = req.params;
-    const deletedPhoto = await prisma.storePhoto.delete({
-      where: { id: parseInt(photoId) },
+    const { storePhotoId } = req.params;
+
+    // Check if photo exists
+    const existingPhoto = await prisma.storePhoto.findUnique({
+      where: { id: Number(storePhotoId) },
     });
 
-    res.status(200).json({ message: "Photo deleted successfully", deletedPhoto });
+    if (!existingPhoto) {
+      return next(createHttpError(404, "Photo not found"));
+    }
+
+    // Delete photo from S3 bucket
+    await deleteObject(existingPhoto.path);
+
+    // Delete photo from database
+    const deletedPhoto = await prisma.storePhoto.delete({
+      where: { id: Number(storePhotoId) },
+    });
+
+    res.status(200).json(deletedPhoto);
   } catch (error) {
     console.log(`Error in delete photo: ${error}`);
     return next(createHttpError(400, "Some thing wait wrong in search photo."));
