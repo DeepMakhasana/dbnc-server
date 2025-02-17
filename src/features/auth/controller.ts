@@ -78,7 +78,7 @@ export async function verifyEmailOTP(req: Request, res: Response, next: NextFunc
       });
 
       if (userType === USER_TYPE.visitor) {
-        isUserExist = await prismaTransaction.visitorVerifiedEmail.findUnique({
+        isUserExist = await prismaTransaction.visitorUser.findUnique({
           where: {
             email,
           },
@@ -96,7 +96,7 @@ export async function verifyEmailOTP(req: Request, res: Response, next: NextFunc
           });
         }
       } else if (userType === USER_TYPE.owner) {
-        isUserExist = await prismaTransaction.ownerVerifiedEmail.findUnique({
+        isUserExist = await prismaTransaction.storeOwnerUser.findUnique({
           where: {
             email,
           },
@@ -111,9 +111,9 @@ export async function verifyEmailOTP(req: Request, res: Response, next: NextFunc
       }
     });
 
-    // visitor login
-    if (userType === USER_TYPE.visitor && isUserExist) {
-      const token = generateToken(isUserExist, [USER_TYPE.visitor]);
+    // visitor or owner login
+    if (isUserExist) {
+      const token = generateToken(isUserExist, [userType]);
       res.status(200).json({ email: email, message: `Email verification successfully`, isUserExist, token });
       return;
     }
