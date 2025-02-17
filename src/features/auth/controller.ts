@@ -11,7 +11,7 @@ export async function sendVerificationEmail(req: Request, res: Response, next: N
     const { email } = req.body;
     const otp = generateOTP();
 
-    const isSendedEmail = sendVerificationOTPEmail(email, otp);
+    const isSendedEmail = await sendVerificationOTPEmail(email, otp);
 
     if (!isSendedEmail) return next(createHttpError(400, "Fail to send verification email, try again"));
 
