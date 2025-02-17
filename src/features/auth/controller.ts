@@ -15,6 +15,8 @@ export async function sendVerificationEmail(req: Request, res: Response, next: N
 
     if (!isSendedEmail) return next(createHttpError(400, "Fail to send verification email, try again"));
 
+    console.log("isSendedEmail", isSendedEmail);
+
     await prisma.$transaction(async (prismaTransaction) => {
       // first check otp is exist in db
       const otpExist = await prismaTransaction.otp.findUnique({

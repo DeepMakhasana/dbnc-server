@@ -2,11 +2,14 @@ import nodemailer from "nodemailer";
 import config from "../config";
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // Use SSL
   auth: {
     user: config.email,
     pass: config.emailPassword,
   },
+  connectionTimeout: 15000, // 15 seconds timeout
 });
 
 // verification email for verify email address ======================================================
