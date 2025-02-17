@@ -20,9 +20,9 @@ const app = express();
 // Middleware
 const allowedOrigins: string[] = [
   config.frontendBaseUrl as string,
+  config.storeFrontendBaseUrl as string,
   "http://localhost:5173",
-  "http://127.0.0.1",
-  "http://0.0.0.0",
+  "http://localhost:3000",
 ];
 const corsOptions = {
   origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => {

@@ -5,6 +5,7 @@ const _config = {
   port: process.env.PORT || 3000,
   nodeEnv: process.env.NODE_ENV,
   frontendBaseUrl: process.env.FRONT_END_URL,
+  storeFrontendBaseUrl: process.env.STORE_FRONT_END_URL,
   databaseURL: process.env.DATABASE_URL,
   email: process.env.EMAIL_ADDRESS,
   emailPassword: process.env.EMAIL_PASSWORD,
