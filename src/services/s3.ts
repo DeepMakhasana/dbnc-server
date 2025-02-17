@@ -94,12 +94,29 @@ export async function deleteObject(key: string) {
   }
 }
 
+export async function deleteS3Object(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { key } = req.body;
+    // input validation
+    if (!key) return next(createHttpError(400, "Enter file name (key) correctly."));
+    const command = new DeleteObjectCommand({
+      Bucket: config.awsS3Bucket as string,
+      Key: key,
+    });
+    await s3Client.send(command);
+    res.status(200).json({ message: "File deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    return next(error);
+  }
+}
+
 s3Router.post("/putObjectPresignedUrl", authenticationMiddleware([USER_TYPE.owner]), putObjectPresignedUrl);
 s3Router.post(
   "/putMultipleObjectPresignedUrl",
   authenticationMiddleware([USER_TYPE.owner]),
   putMultipleObjectPresignedUrl
 );
-// s3Router.delete("/deleteObject", authenticationMiddleware([USER_TYPE.owner]), deleteObject);
+s3Router.delete("/deleteObject", authenticationMiddleware([USER_TYPE.owner]), deleteS3Object);
 
 export default s3Router;
