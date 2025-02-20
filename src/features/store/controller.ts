@@ -177,11 +177,13 @@ export async function getStoreByCity(req: Request, res: Response, next: NextFunc
         slug: true,
         logo: true,
         number: true,
+        tagline: true,
         category: {
           select: { name: true }, // Get category name
         },
         storeAddresses: {
           select: {
+            addressLine: true,
             city: { select: { name: true } },
             state: { select: { name: true } },
           },
