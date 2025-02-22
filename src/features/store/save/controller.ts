@@ -34,11 +34,12 @@ export async function getAllOwnSavedStore(req: RequestWithUser, res: Response, n
             logo: true,
             storeAddresses: {
               select: {
+                addressLine: true,
                 city: {
                   select: {
                     name: true,
                   },
-                }, // Ensure this field exists if city is a relation
+                },
               },
             },
             category: {

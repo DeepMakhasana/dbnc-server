@@ -66,10 +66,15 @@ export async function getStoreById(req: Request, res: Response, next: NextFuncti
         },
       });
     } else if (type === "category-bio") {
-      store = await prisma.store.findUnique({
+      let store = await prisma.store.findUnique({
         where: { id: parseInt(storeId) },
         select: {
           name: true,
+          storeAddresses: {
+            select: {
+              cityId: true,
+            },
+          },
           category: true,
           bio: true,
         },
