@@ -34,7 +34,8 @@ export async function getAllOwnSavedStore(req: RequestWithUser, res: Response, n
             logo: true,
             storeAddresses: {
               select: {
-                addressLine: true,
+                addressLine1: true,
+                addressLine2: true,
                 city: {
                   select: {
                     name: true,

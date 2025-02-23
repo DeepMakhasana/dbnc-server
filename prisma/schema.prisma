@@ -140,7 +140,8 @@ model StoreAddress {
   id            Int    @id @default(autoincrement())
   storeId       Int    @unique
   store         Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  addressLine   String @db.VarChar(255)
+  addressLine1  String @db.VarChar(255) // shop number, building, near by/opposite
+  addressLine2  String @db.VarChar(255) // main area, road
   stateId       Int
   cityId        Int
   state         State  @relation(fields: [stateId], references: [id])

@@ -3,6 +3,7 @@ import createHttpError from "http-errors";
 import prisma from "../../config/prisma";
 import { hashSecret, verifySecret } from "../../utils/bcrypt";
 import { RequestWithUser } from "../../middlewares/auth.middleware";
+import { deleteObjects } from "../../services/s3";
 
 export async function createStore(req: Request, res: Response, next: NextFunction) {
   try {
@@ -19,9 +20,10 @@ export async function createStore(req: Request, res: Response, next: NextFunctio
 export async function getStoreBySlug(req: Request, res: Response, next: NextFunction) {
   try {
     const { slug } = req.params;
+    const id = slug.split("-").pop();
 
     const store = await prisma.store.findUnique({
-      where: { slug },
+      where: { id: Number(id) },
       include: { category: true },
       omit: {
         secret: true,
@@ -153,14 +155,20 @@ export async function deleteStoreById(req: Request, res: Response, next: NextFun
   try {
     const { id } = req.params;
 
-    await prisma.store.delete({
-      where: { id: Number(id) },
+    await prisma.$transaction(async (prismaTransaction) => {
+      await prismaTransaction.store.delete({
+        where: { id: Number(id) },
+      });
+      const result = await deleteObjects(`${id}`);
+      if (!result) {
+        throw new Error(`try again, store not deleted.`);
+      }
     });
 
     res.status(200).json({ message: "Store deleted successfully." });
   } catch (error) {
-    console.log(`Error in Store Get by slug: ${error}`);
-    return next(createHttpError(400, "Some thing wait wrong in Store Get by slug."));
+    console.log(`Error in Store delete: ${error}`);
+    return next(error);
   }
 }
 
@@ -188,7 +196,8 @@ export async function getStoreByCity(req: Request, res: Response, next: NextFunc
         },
         storeAddresses: {
           select: {
-            addressLine: true,
+            addressLine1: true,
+            addressLine2: true,
             city: { select: { name: true } },
             state: { select: { name: true } },
           },
@@ -208,20 +217,18 @@ export async function getStoreByCitySlug(req: Request, res: Response, next: Next
     const { slug, city } = req.params;
     console.log(slug, city);
 
+    const id = slug.split("-").pop();
+
     const storeBySlugCity = await prisma.store.findUnique({
       where: {
-        slug: slug, // Match the store slug
-        // storeAddresses: {
-        //   city: {
-        //     name: { equals: city, mode: "insensitive" }, // Ensure city matches (case insensitive)
-        //   },
-        // },
+        id: Number(id),
       },
       include: {
         category: { select: { name: true } }, // Get category name
         storeAddresses: {
           select: {
-            addressLine: true,
+            addressLine1: true,
+            addressLine2: true,
             googleMapLink: true,
             city: { select: { name: true } },
             state: { select: { name: true } },
@@ -259,7 +266,7 @@ export async function getOnlySlugAndCity(req: Request, res: Response, next: Next
   try {
     const storesWithCity = await prisma.storeAddress.findMany({
       select: {
-        store: { select: { slug: true } },
+        store: { select: { id: true, slug: true } },
         city: { select: { name: true } },
       },
     });

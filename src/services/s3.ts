@@ -1,5 +1,13 @@
 import express, { NextFunction, Request, Response } from "express";
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  DeleteObjectsCommandInput,
+  ListObjectsV2Command,
+  ListObjectsV2CommandInput,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import config from "../config";
 import createHttpError from "http-errors";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -90,6 +98,56 @@ export async function deleteObject(key: string) {
     }
   } catch (error) {
     console.log(error);
+    return false;
+  }
+}
+
+export async function deleteObjects(folderPath: string) {
+  try {
+    let continuationToken: string | undefined = undefined;
+
+    do {
+      // Step 1: List objects in the folder
+      const listParams: ListObjectsV2CommandInput = {
+        Bucket: config.awsS3Bucket,
+        Prefix: folderPath, // Ensure folderPath ends with '/'
+        ContinuationToken: continuationToken, // For paginated results
+      };
+
+      const listCommand = new ListObjectsV2Command(listParams);
+      const listResponse = await s3Client.send(listCommand);
+
+      if (!listResponse.Contents || listResponse.Contents.length === 0) {
+        console.log("No objects found in the folder.");
+        break;
+      }
+
+      // Step 2: Prepare objects for deletion
+      const objectsToDelete = listResponse.Contents.map((object) => ({
+        Key: object.Key!,
+      }));
+
+      const deleteParams: DeleteObjectsCommandInput = {
+        Bucket: config.awsS3Bucket,
+        Delete: {
+          Objects: objectsToDelete,
+        },
+      };
+
+      // Step 3: Send delete command
+      const deleteCommand = new DeleteObjectsCommand(deleteParams);
+      const deleteResponse = await s3Client.send(deleteCommand);
+
+      console.log("Deleted objects:", deleteResponse.Deleted);
+
+      // Step 4: Handle pagination
+      continuationToken = listResponse.NextContinuationToken;
+    } while (continuationToken);
+
+    console.log(`Successfully deleted all objects in folder: ${folderPath}`);
+    return true;
+  } catch (error) {
+    console.error("Error deleting folder:", (error as Error).message);
     return false;
   }
 }

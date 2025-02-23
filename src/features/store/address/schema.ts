@@ -6,9 +6,13 @@ export const storeAddressSchema = Joi.object({
     "any.required": "Store ID is required.",
     "number.base": "Store ID must be a valid number.",
   }),
-  addressLine: Joi.string().max(255).required().messages({
-    "any.required": "Address Line is required.",
-    "string.max": "Address Line must be at most 255 characters long.",
+  addressLine1: Joi.string().max(255).required().messages({
+    "any.required": "Shop number, building, near by/opposite is required.",
+    "string.max": "Shop number, building, near by/opposite must be at most 255 characters long.",
+  }),
+  addressLine2: Joi.string().max(255).required().messages({
+    "any.required": "Main area, road is required.",
+    "string.max": "Main area, road must be at most 255 characters long.",
   }),
   stateId: Joi.number().integer().required().messages({
     "any.required": "State ID is required.",
