@@ -229,6 +229,7 @@ export async function getStoreByCitySlug(req: Request, res: Response, next: Next
           select: {
             addressLine1: true,
             addressLine2: true,
+            pincode: true,
             googleMapLink: true,
             city: { select: { name: true } },
             state: { select: { name: true } },
