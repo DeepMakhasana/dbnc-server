@@ -100,11 +100,21 @@ model SaveStore {
   @@unique([userId, storeId])
 }
 
+model CategoryTitle {
+  id         Int        @id @default(autoincrement())
+  title      String     @unique @db.VarChar(50)
+  index      Int
+  categories Category[]
+}
+
 model Category {
-  id       Int       @id @default(autoincrement())
-  name     String    @db.VarChar(50)
-  stores   Store[]
-  services Service[]
+  id              Int           @id @default(autoincrement())
+  name            String        @unique @db.VarChar(50)
+  icon            String        @default("none") @db.VarChar(255)
+  categoryTitleId Int           @default(1)
+  categoryTitle   CategoryTitle @relation(fields: [categoryTitleId], references: [id])
+  stores          Store[]
+  services        Service[]
 }
 
 model Service {

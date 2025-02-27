@@ -3,6 +3,7 @@ import {
   createStore,
   createUpdateStoreSecret,
   deleteStoreById,
+  getNearByStore,
   getOnlySlugAndCity,
   getStoreByCity,
   getStoreByCitySlug,
@@ -47,6 +48,7 @@ storeRouter.post(
 );
 storeRouter.put("/status", validate(storeIdSecretSchema), updateStoreOpenCloseStatus);
 storeRouter.get("/slug-city", getOnlySlugAndCity);
+storeRouter.get("/nearby", getNearByStore);
 storeRouter.get("/city/:city", validate(citySchema, "params"), getStoreByCity);
 storeRouter.get("/:slug/city/:city", validate(slugCitySchema, "params"), getStoreByCitySlug);
 storeRouter.get("/:slug", validate(slugSchema, "params"), getStoreBySlug);

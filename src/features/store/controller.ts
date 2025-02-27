@@ -17,26 +17,6 @@ export async function createStore(req: Request, res: Response, next: NextFunctio
   }
 }
 
-export async function getStoreBySlug(req: Request, res: Response, next: NextFunction) {
-  try {
-    const { slug } = req.params;
-    const id = slug.split("-").pop();
-
-    const store = await prisma.store.findUnique({
-      where: { id: Number(id) },
-      include: { category: true },
-      omit: {
-        secret: true,
-      },
-    });
-
-    res.status(200).json(store);
-  } catch (error) {
-    console.log(`Error in Store Get by slug: ${error}`);
-    return next(createHttpError(400, "Some thing wait wrong in Store Get by slug."));
-  }
-}
-
 export async function getStoreById(req: Request, res: Response, next: NextFunction) {
   try {
     const { id, type } = req.query;
@@ -172,6 +152,87 @@ export async function deleteStoreById(req: Request, res: Response, next: NextFun
   }
 }
 
+export async function createUpdateStoreSecret(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { storeId, secret } = req.body;
+
+    const hashedSecret = await hashSecret(secret);
+
+    await prisma.store.update({
+      where: {
+        id: storeId,
+      },
+      data: { secret: hashedSecret },
+    });
+
+    res.status(201).json({ message: "Secret set/change successfully" });
+  } catch (error) {
+    console.log("Error in set/change store secret: ", error);
+    return next(error);
+  }
+}
+
+export async function updateStoreOpenCloseStatus(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { storeId, secret } = req.body;
+
+    const store = await prisma.store.findUnique({
+      where: { id: storeId },
+      select: { isOpen: true, secret: true }, // Get current status
+    });
+
+    if (!store) {
+      return next(createHttpError(400, "Wrong store id."));
+    }
+    if (!store.secret) {
+      return next(createHttpError(400, "secret not available, first set secret from store manage dashboard"));
+    }
+
+    const isMatch = await verifySecret(secret, store.secret);
+
+    if (isMatch) {
+      const updateStoreStatus = await prisma.store.update({
+        where: { id: storeId },
+        data: { isOpen: !store.isOpen },
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+          isOpen: true,
+        },
+      });
+      res.status(200).json(updateStoreStatus);
+    } else {
+      res.status(401).json({ message: "Invalid Secret" });
+    }
+  } catch (error) {
+    console.log("Error in update store status: ", error);
+    return next(error);
+  }
+}
+
+// -------------------------------------------------------------------------------------------------
+
+export async function getStoreBySlug(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { slug } = req.params;
+    const id = slug.split("-").pop();
+
+    const store = await prisma.store.findUnique({
+      where: { id: Number(id) },
+      include: { category: true },
+      omit: {
+        secret: true,
+      },
+    });
+
+    res.status(200).json(store);
+  } catch (error) {
+    console.log(`Error in Store Get by slug: ${error}`);
+    return next(createHttpError(400, "Some thing wait wrong in Store Get by slug."));
+  }
+}
+
 export async function getStoreByCity(req: Request, res: Response, next: NextFunction) {
   try {
     const { city } = req.params;
@@ -279,61 +340,50 @@ export async function getOnlySlugAndCity(req: Request, res: Response, next: Next
   }
 }
 
-export async function createUpdateStoreSecret(req: Request, res: Response, next: NextFunction) {
+export async function getNearByStore(req: Request, res: Response, next: NextFunction) {
   try {
-    const { storeId, secret } = req.body;
+    const { lat, lon, range } = req.query;
 
-    const hashedSecret = await hashSecret(secret);
+    const latitude = parseFloat(lat as string);
+    const longitude = parseFloat(lon as string);
+    const RADIUS_METERS = Number(range) * 1000;
 
-    await prisma.store.update({
-      where: {
-        id: storeId,
-      },
-      data: { secret: hashedSecret },
-    });
+    const result: any = await prisma.$queryRaw`
+      SELECT s.id, s.name, s.slug, s.tagline, s.logo, sa."addressLine1", sa."addressLine2", st."name" AS state, ct."name" AS city, c."name" AS category,
+        ST_Distance(
+          sa.coordinates,
+          ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography
+        ) AS distance
+      FROM "StoreAddress" AS sa
+      INNER JOIN "State" AS st ON sa."stateId" = st."id"
+      INNER JOIN "City" AS ct ON sa."cityId" = ct."id"
+      INNER JOIN "Store" AS s ON sa."storeId" = s."id"
+      INNER JOIN "Category" AS c ON s."categoryId" = c."id"
+      WHERE ST_DWithin(
+        sa.coordinates, 
+        ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography, 
+        ${RADIUS_METERS}
+      )
+      ORDER BY distance;
+    `;
 
-    res.status(201).json({ message: "Secret set/change successfully" });
+    const nearByStore = result.map((store: any) => ({
+      id: store.id,
+      slug: store.slug,
+      name: store.name,
+      tagline: store.tagline,
+      logo: store.logo,
+      addressLine1: store.addressLine1,
+      addressLine2: store.addressLine2,
+      state: store.state,
+      city: store.city,
+      category: store.category,
+      distance: store.distance / 1000, // Distance in meters
+    }));
+
+    res.status(200).json(nearByStore);
   } catch (error) {
-    console.log("Error in set/change store secret: ", error);
-    return next(error);
-  }
-}
-
-export async function updateStoreOpenCloseStatus(req: Request, res: Response, next: NextFunction) {
-  try {
-    const { storeId, secret } = req.body;
-
-    const store = await prisma.store.findUnique({
-      where: { id: storeId },
-      select: { isOpen: true, secret: true }, // Get current status
-    });
-
-    if (!store) {
-      return next(createHttpError(400, "Wrong store id."));
-    }
-    if (!store.secret) {
-      return next(createHttpError(400, "secret not available, first set secret from store manage dashboard"));
-    }
-
-    const isMatch = await verifySecret(secret, store.secret);
-
-    if (isMatch) {
-      const updateStoreStatus = await prisma.store.update({
-        where: { id: storeId },
-        data: { isOpen: !store.isOpen },
-        select: {
-          id: true,
-          slug: true,
-          name: true,
-          isOpen: true,
-        },
-      });
-      res.status(200).json(updateStoreStatus);
-    } else {
-      res.status(401).json({ message: "Invalid Secret" });
-    }
-  } catch (error) {
-    console.log("Error in update store status: ", error);
+    console.log(`Error in Store Get by city: ${error}`);
     return next(error);
   }
 }
