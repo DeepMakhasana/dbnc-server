@@ -5,13 +5,15 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "rhel-openssl-3.0.x"]
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
 }
 
 // auth tables -----------------------------------------------------------------
@@ -84,6 +86,7 @@ model Store {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   saveStores        SaveStore[]
+  // StoreProducts     StoreProduct[]
 }
 
 model SaveStore {
@@ -137,19 +140,18 @@ model City {
 }
 
 model StoreAddress {
-  id            Int    @id @default(autoincrement())
-  storeId       Int    @unique
-  store         Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  addressLine1  String @db.VarChar(255) // shop number, building, near by/opposite
-  addressLine2  String @db.VarChar(255) // main area, road
+  id            Int                                   @id @default(autoincrement())
+  storeId       Int                                   @unique
+  store         Store                                 @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  addressLine1  String                                @db.VarChar(255) // shop number, building, near by/opposite
+  addressLine2  String                                @db.VarChar(255) // main area, road
   stateId       Int
   cityId        Int
-  state         State  @relation(fields: [stateId], references: [id])
-  city          City   @relation(fields: [cityId], references: [id])
-  latitude      Float // Latitude (e.g., 40.7128)
-  longitude     Float // Longitude (e.g., -74.0060)
+  state         State                                 @relation(fields: [stateId], references: [id])
+  city          City                                  @relation(fields: [cityId], references: [id])
   pincode       Int
-  googleMapLink String @db.VarChar(255)
+  googleMapLink String                                @db.VarChar(255)
+  coordinates   Unsupported("geography(Point, 4326)") // Storing lat/lng as a Point
 }
 
 model SocialMedia {
@@ -176,5 +178,42 @@ model StorePhoto {
   index   Int
   store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
 }
+
+// --------------------------------------------------------------------------------------
+
+// product management -------------------------------------------------------------------
+
+// model ProductCategory {
+//   id            Int               @id @default(autoincrement())
+//   name          String            @db.VarChar(100)
+//   categoryId    Int? // Nullable for root categories
+//   parent        ProductCategory?  @relation("CategoryToCategory", fields: [categoryId], references: [id])
+//   subcategories ProductCategory[] @relation("CategoryToCategory")
+//   products      Product[]
+// }
+
+// model Product {
+//   id            Int             @id @default(autoincrement())
+//   name          String          @db.VarChar(100)
+//   categoryId    Int
+//   category      ProductCategory @relation(fields: [categoryId], references: [id])
+//   link          String
+//   barcode       String
+//   createdAt     DateTime        @default(now())
+//   updatedAt     DateTime        @updatedAt
+//   StoreProducts StoreProduct[]
+// }
+
+// model StoreProduct {
+//   id        Int      @id @default(autoincrement())
+//   storeId   Int
+//   productId Int
+//   quantity  Int
+//   price     Int
+//   updatedAt DateTime @updatedAt
+
+//   store   Store   @relation(fields: [storeId], references: [id])
+//   product Product @relation(fields: [productId], references: [id])
+// }
 
 // --------------------------------------------------------------------------------------

@@ -21,6 +21,7 @@ const app = express();
 const allowedOrigins: string[] = [
   config.frontendBaseUrl as string,
   config.storeFrontendBaseUrl as string,
+  "https://www.liveyst.com",
   "http://localhost:5173",
   "http://localhost:3000",
 ];
@@ -29,7 +30,7 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       cb(null, true);
     } else {
-      cb(new Error("Not allowed by CORS"));
+      cb(new Error("Access Denied"));
     }
   }, // Only allow requests from this origin
   optionsSuccessStatus: 200, // Some legacy browsers choke on 204
