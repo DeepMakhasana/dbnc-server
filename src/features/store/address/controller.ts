@@ -24,6 +24,11 @@ interface StoreAddressCreateResponse extends StoreAddressMain {
   coordinates_json: string;
 }
 
+interface StoreCoordinatesResponse {
+  id: number;
+  coordinates_json: string;
+}
+
 export async function createAddress(req: Request, res: Response, next: NextFunction) {
   try {
     const value: StoreAddressCreateProps = req.body;
@@ -80,6 +85,28 @@ export async function getStoreAddressById(req: Request, res: Response, next: Nex
     }));
 
     res.status(200).json(storeAddresses[0]);
+  } catch (error) {
+    console.log(`Error in get store address: ${error}`);
+    return next(createHttpError(400, "Some thing wait wrong in get store address."));
+  }
+}
+
+export async function getStoreCoordinatesById(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { storeId } = req.params;
+
+    const response: StoreCoordinatesResponse[] = await prisma.$queryRaw`
+      SELECT "id", ST_AsGeoJSON(coordinates) AS coordinates_json FROM "StoreAddress"
+      WHERE "storeId"=${storeId};
+    `;
+
+    const storeCoordinates = response.map((address) => ({
+      id: address.id,
+      latitude: JSON.parse(address.coordinates_json).coordinates[1], // Convert GeoJSON string to object
+      longitude: JSON.parse(address.coordinates_json).coordinates[0],
+    }));
+
+    res.status(200).json(storeCoordinates[0]);
   } catch (error) {
     console.log(`Error in get store address: ${error}`);
     return next(createHttpError(400, "Some thing wait wrong in get store address."));

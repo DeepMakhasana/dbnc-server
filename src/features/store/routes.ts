@@ -10,6 +10,7 @@ import {
   getStoreById,
   getStoreBySlug,
   getStoresByOwnerId,
+  getStoreStatus,
   updateStoreById,
   updateStoreOpenCloseStatus,
 } from "./controller";
@@ -39,6 +40,7 @@ storeRouter.get(
   validate(getByIdQuerySchema, "query"),
   getStoreById
 );
+storeRouter.get("/status/:id", validate(idSchema, "params"), getStoreStatus);
 storeRouter.get("/owner", authenticationMiddleware([USER_TYPE.owner]), getStoresByOwnerId);
 storeRouter.post(
   "/secret",

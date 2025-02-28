@@ -387,3 +387,24 @@ export async function getNearByStore(req: Request, res: Response, next: NextFunc
     return next(error);
   }
 }
+
+export async function getStoreStatus(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { statusId } = req.query;
+
+    const status = await prisma.store.findUnique({
+      where: {
+        id: Number(statusId),
+      },
+      select: {
+        id: true,
+        isOpen: true,
+      },
+    });
+
+    res.status(200).json(status);
+  } catch (error) {
+    console.log(`Error in Store status Get by id: ${error}`);
+    return next(error);
+  }
+}
