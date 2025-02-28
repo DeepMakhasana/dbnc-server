@@ -390,11 +390,11 @@ export async function getNearByStore(req: Request, res: Response, next: NextFunc
 
 export async function getStoreStatus(req: Request, res: Response, next: NextFunction) {
   try {
-    const { statusId } = req.query;
+    const { id } = req.params;
 
     const status = await prisma.store.findUnique({
       where: {
-        id: Number(statusId),
+        id: Number(id),
       },
       select: {
         id: true,
