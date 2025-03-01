@@ -189,30 +189,17 @@ export async function suggestServicesByCategory(req: Request, res: Response, nex
     });
 
     const oldServices = categoryWithServicesById?.services.map((s) => s.name);
-    // const oldServicesString = oldServices?.join(", ");
+    const oldServicesString = oldServices?.join(", ");
 
-    // const servicesString = await getAIResponse(
-    //   `suggest services for \n business name: ${businessName} \n category: ${categoryWithServicesById?.name} ${
-    //     oldServicesString && "\n exclude this services: " + oldServicesString
-    //   } \n return only the services separated by ,`
-    // );
+    const servicesString = await getAIResponse(
+      `suggest services for \n business name: ${businessName} \n category: ${categoryWithServicesById?.name} ${
+        oldServicesString && "\n exclude this services: " + oldServicesString
+      } \n return only the services separated by ,`
+    );
 
-    // const services = servicesString?.split(", ");
+    const services = servicesString?.split(", ");
 
-    res
-      .status(200)
-      .json([
-        "Jewellery CAD Designing",
-        "CorelDraw for Jewellery Design",
-        "3D Jewellery Modeling",
-        "Rhino for Jewellery Designing",
-        "Matrix Gold Training",
-        "Hand Sketching for Jewellery",
-        "Jewellery Rendering Techniques",
-        "Jewellery Manufacturing Basics",
-        "Diamond & Gemstone Setting Training",
-        "Jewellery Design Certification Courses",
-      ]);
+    res.status(200).json(services);
   } catch (error) {
     console.error("Error in openai get services by category: ", error);
     return next(error);
