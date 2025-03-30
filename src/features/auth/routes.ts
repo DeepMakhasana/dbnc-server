@@ -3,13 +3,11 @@ import {
   sendVerificationEmail,
   storeOwnerUserRegisterWithEmail,
   verifyEmailOTP,
-  visitorUserLoginWithEmail,
   visitorProfileUpdate,
 } from "./controller";
 import { validate } from "../../middlewares/validator.middleware";
 import { emailSchema, ownerUserSchema, verifyEmailOtpSchema, visitorUserUpdateSchema } from "./schema";
 import { authenticationMiddleware } from "../../middlewares/auth.middleware";
-import { USER_TYPE } from "../../utils/constant";
 
 const authRouter = express.Router();
 
@@ -18,14 +16,9 @@ authRouter.post("/send-verification-email", validate(emailSchema), sendVerificat
 authRouter.post("/verify-email-otp", validate(verifyEmailOtpSchema), verifyEmailOTP);
 
 // login
-authRouter.post("/visitor/login", validate(emailSchema), visitorUserLoginWithEmail);
+// authRouter.post("/visitor/login", validate(ownerUserSchema), storeOwnerUserRegisterWithEmail);
 authRouter.post("/owner/onboard", validate(ownerUserSchema), storeOwnerUserRegisterWithEmail);
 
-authRouter.put(
-  "/visitor",
-  authenticationMiddleware([USER_TYPE.visitor]),
-  validate(visitorUserUpdateSchema),
-  visitorProfileUpdate
-);
+authRouter.put("/visitor", authenticationMiddleware(), validate(visitorUserUpdateSchema), visitorProfileUpdate);
 
 export default authRouter;

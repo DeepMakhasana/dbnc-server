@@ -77,37 +77,17 @@ export async function verifyEmailOTP(req: Request, res: Response, next: NextFunc
         },
       });
 
-      if (userType === USER_TYPE.visitor) {
-        isUserExist = await prismaTransaction.visitorUser.findUnique({
-          where: {
+      isUserExist = await prismaTransaction.storeOwnerUser.findUnique({
+        where: {
+          email,
+        },
+      });
+      if (!isUserExist) {
+        await prismaTransaction.userVerifiedEmail.create({
+          data: {
             email,
           },
         });
-        if (!isUserExist) {
-          await prismaTransaction.visitorVerifiedEmail.create({
-            data: {
-              email,
-            },
-          });
-          isUserExist = await prismaTransaction.visitorUser.create({
-            data: {
-              email,
-            },
-          });
-        }
-      } else if (userType === USER_TYPE.owner) {
-        isUserExist = await prismaTransaction.storeOwnerUser.findUnique({
-          where: {
-            email,
-          },
-        });
-        if (!isUserExist) {
-          await prismaTransaction.ownerVerifiedEmail.create({
-            data: {
-              email,
-            },
-          });
-        }
       }
     });
 
@@ -125,41 +105,43 @@ export async function verifyEmailOTP(req: Request, res: Response, next: NextFunc
   }
 }
 
-export async function visitorUserLoginWithEmail(req: Request, res: Response, next: NextFunction) {
-  try {
-    const { email } = req.body;
-    // check visitor user is exist or not
-    const visitorUserExists = await prisma.visitorUser.findUnique({
-      where: { email },
-    });
-    if (visitorUserExists) {
-      // generate the token
-      const token = generateToken(visitorUserExists, [USER_TYPE.visitor]);
-      res.status(200).json({ token });
-      return;
-    }
+// export async function visitorUserLoginWithEmail(req: Request, res: Response, next: NextFunction) {
+//   try {
+//     const { email, name, number } = req.body;
+//     // check visitor user is exist or not
+//     const visitorUserExists = await prisma.storeOwnerUser.findUnique({
+//       where: { email },
+//     });
+//     if (visitorUserExists) {
+//       // generate the token
+//       const token = generateToken(visitorUserExists, [USER_TYPE.visitor]);
+//       res.status(200).json({ token });
+//       return;
+//     }
 
-    // check email isVerified or not
-    const isEmailVerified = await prisma.visitorVerifiedEmail.findUnique({
-      where: {
-        email,
-      },
-    });
-    if (!isEmailVerified) return next(createHttpError(400, "email not verified, please first verify email address"));
+//     // check email isVerified or not
+//     const isEmailVerified = await prisma.userVerifiedEmail.findUnique({
+//       where: {
+//         email,
+//       },
+//     });
+//     if (!isEmailVerified) return next(createHttpError(400, "email not verified, please first verify email address"));
 
-    const createdVisitorUser = await prisma.visitorUser.create({
-      data: {
-        email,
-      },
-    });
-    // generate the token
-    const token = generateToken(createdVisitorUser, [USER_TYPE.visitor]);
-    res.status(200).json({ token });
-  } catch (error) {
-    console.log(`Error in visitor login: ${error}`);
-    return next(createHttpError(400, "Some thing wait wrong in visitor login."));
-  }
-}
+//     const createdVisitorUser = await prisma.storeOwnerUser.create({
+//       data: {
+//         email,
+//         name,
+//         number,
+//       },
+//     });
+//     // generate the token
+//     const token = generateToken(createdVisitorUser, [USER_TYPE.visitor]);
+//     res.status(200).json({ token });
+//   } catch (error) {
+//     console.log(`Error in visitor login: ${error}`);
+//     return next(createHttpError(400, "Some thing wait wrong in visitor login."));
+//   }
+// }
 
 export async function storeOwnerUserRegisterWithEmail(req: Request, res: Response, next: NextFunction) {
   try {
@@ -177,7 +159,7 @@ export async function storeOwnerUserRegisterWithEmail(req: Request, res: Respons
     }
 
     // check email isVerified or not
-    const isEmailVerified = await prisma.ownerVerifiedEmail.findUnique({
+    const isEmailVerified = await prisma.userVerifiedEmail.findUnique({
       where: {
         email,
       },
@@ -205,7 +187,7 @@ export async function visitorProfileUpdate(req: RequestWithUser, res: Response, 
     const { name, number } = req.body;
     const user = req.user;
 
-    const updateVisitorProfile = await prisma.visitorUser.update({
+    const updateVisitorProfile = await prisma.storeOwnerUser.update({
       where: { id: user?.id },
       data: {
         name,

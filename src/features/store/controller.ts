@@ -3,7 +3,6 @@ import createHttpError from "http-errors";
 import prisma from "../../config/prisma";
 import { hashSecret, verifySecret } from "../../utils/bcrypt";
 import { RequestWithUser } from "../../middlewares/auth.middleware";
-import { deleteObjects } from "../../services/s3";
 
 export async function createStore(req: Request, res: Response, next: NextFunction) {
   try {
@@ -135,15 +134,17 @@ export async function deleteStoreById(req: Request, res: Response, next: NextFun
   try {
     const { id } = req.params;
 
-    await prisma.$transaction(async (prismaTransaction) => {
-      await prismaTransaction.store.delete({
-        where: { id: Number(id) },
-      });
-      const result = await deleteObjects(`${id}`);
-      if (!result) {
-        throw new Error(`try again, store not deleted.`);
-      }
+    await prisma.store.delete({
+      where: { id: Number(id) },
     });
+
+    // await prisma.$transaction(async (prismaTransaction) => {
+
+    // const result = await deleteObjects(`${id}`);
+    // if (!result) {
+    //   throw new Error(`try again, store not deleted.`);
+    // }
+    // });
 
     res.status(200).json({ message: "Store deleted successfully." });
   } catch (error) {

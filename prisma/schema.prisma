@@ -18,24 +18,25 @@ datasource db {
 
 // auth tables -----------------------------------------------------------------
 
-model VisitorUser {
-  id         Int         @id @default(autoincrement())
-  name       String?     @db.VarChar(70)
-  email      String      @unique @db.VarChar(255)
-  number     String?     @unique @db.VarChar(10)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  saveStores SaveStore[]
-}
+// model VisitorUser {
+//   id         Int         @id @default(autoincrement())
+//   name       String?     @db.VarChar(70)
+//   email      String      @unique @db.VarChar(255)
+//   number     String?     @unique @db.VarChar(10)
+//   createdAt  DateTime    @default(now())
+//   updatedAt  DateTime    @updatedAt
+
+// }
 
 model StoreOwnerUser {
-  id        Int      @id @default(autoincrement())
-  name      String   @db.VarChar(70)
-  email     String   @unique @db.VarChar(255)
-  number    String   @unique @db.VarChar(10)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  stores    Store[]
+  id         Int         @id @default(autoincrement())
+  name       String      @db.VarChar(70)
+  email      String      @unique @db.VarChar(255)
+  number     String      @unique @db.VarChar(10)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  stores     Store[]
+  saveStores SaveStore[]
 }
 
 model Otp {
@@ -45,17 +46,17 @@ model Otp {
   createdAt DateTime @default(now())
 }
 
-model OwnerVerifiedEmail {
+model UserVerifiedEmail {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   createdAt DateTime @default(now())
 }
 
-model VisitorVerifiedEmail {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  createdAt DateTime @default(now())
-}
+// model VisitorVerifiedEmail {
+//   id        Int      @id @default(autoincrement())
+//   email     String   @unique
+//   createdAt DateTime @default(now())
+// }
 
 // --------------------------------------------------------------------------------------
 
@@ -65,7 +66,7 @@ model Store {
   slug              String             @unique
   name              String             @db.VarChar(50)
   isOpen            Boolean            @default(true)
-  tagline           String             @db.VarChar(70)
+  tagline           String?            @db.VarChar(70)
   logo              String             @db.VarChar(255)
   number            String             @db.VarChar(10)
   whatsappNumber    String             @db.VarChar(10)
@@ -90,12 +91,12 @@ model Store {
 }
 
 model SaveStore {
-  id          Int         @id @default(autoincrement())
-  userId      Int
-  storeId     Int
-  visitorUser VisitorUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-  store       Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  createdAt   DateTime    @default(now())
+  id             Int            @id @default(autoincrement())
+  userId         Int
+  storeId        Int
+  storeOwnerUser StoreOwnerUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store          Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
 
   @@unique([userId, storeId])
 }
