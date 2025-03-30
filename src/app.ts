@@ -50,6 +50,15 @@ app.get("/api/health", (req, res, next) => {
   res.json({ message: "Good health of one profile live API.", status: "Ok" });
 });
 
+app.get("/pay/:id", (req, res, next) => {
+  const { id } = req.params;
+  if (id) {
+    res.redirect(`upi://pay?pn=UPAYI&pa=Q360804552@ybl&cu=INR&am=100&tn=${id}`);
+  } else {
+    res.json({ message: "provide id for payment" });
+  }
+});
+
 // use root routes
 app.use("/api/auth", authRouter);
 app.use("/api/utils", utilsRouter);
