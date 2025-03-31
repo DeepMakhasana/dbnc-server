@@ -24,6 +24,23 @@ export async function createUpiId(req: RequestWithUser, res: Response, next: Nex
   }
 }
 
+export async function getUpiIds(req: RequestWithUser, res: Response, next: NextFunction) {
+  try {
+    const user = req.user;
+
+    const upiIds = await prisma.upiId.findMany({
+      where: {
+        userId: Number(user?.id),
+      },
+    });
+
+    res.status(200).json({ upiId: upiIds });
+  } catch (error) {
+    console.log(`Error in get upiId: ${error}`);
+    return next(createHttpError(400, "Some thing wait wrong in get upiId."));
+  }
+}
+
 export async function createTransaction(req: Request, res: Response, next: NextFunction) {
   try {
     const { upiId, amount } = req.body;
@@ -41,5 +58,25 @@ export async function createTransaction(req: Request, res: Response, next: NextF
   } catch (error) {
     console.log(`Error in create transaction: ${error}`);
     return next(createHttpError(400, "Some thing wait wrong in create transaction."));
+  }
+}
+
+export async function getTransactionByUpiId(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { upiId } = req.query;
+
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        upiId: Number(upiId),
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    res.status(200).json({ transactions });
+  } catch (error) {
+    console.log(`Error in get transactions: ${error}`);
+    return next(createHttpError(400, "Some thing wait wrong in get transactions."));
   }
 }

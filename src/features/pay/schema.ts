@@ -20,3 +20,10 @@ export const upiIdSchema = Joi.object({
     "string.max": "UPI ID must not exceed 255 characters.",
   }),
 });
+
+export const upiIdNumberSchema = Joi.object({
+  upiId: Joi.number().integer().positive().required().messages({
+    "number.base": "UPI ID must be a number.",
+    "any.required": "UPI ID is required.",
+  }),
+});
