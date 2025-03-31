@@ -37,6 +37,7 @@ model StoreOwnerUser {
   updatedAt  DateTime    @updatedAt
   stores     Store[]
   saveStores SaveStore[]
+  upiIds     UpiId[]
 }
 
 model Otp {
@@ -49,6 +50,22 @@ model Otp {
 model UserVerifiedEmail {
   id        Int      @id @default(autoincrement())
   email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model UpiId {
+  id           Int            @id @default(autoincrement())
+  upiId        String         @unique @db.VarChar(255)
+  userId       Int
+  user         StoreOwnerUser @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  upiId     Int
+  upi       UpiId    @relation(fields: [upiId], references: [id])
+  amount    Int
   createdAt DateTime @default(now())
 }
 

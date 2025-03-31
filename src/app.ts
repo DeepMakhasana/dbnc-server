@@ -14,6 +14,9 @@ import storeLinkRouter from "./features/store/link/routes";
 import storePhotoRouter from "./features/store/photo/routes";
 import storeServiceRouter from "./features/store/service/routes";
 import storeSaveRouter from "./features/store/save/routes";
+import payRouter from "./features/pay/routes";
+import prisma from "./config/prisma";
+import createHttpError from "http-errors";
 
 const app = express();
 
@@ -50,18 +53,40 @@ app.get("/api/health", (req, res, next) => {
   res.json({ message: "Good health of one profile live API.", status: "Ok" });
 });
 
-app.get("/pay/:id", (req, res, next) => {
+app.get("/:id", async (req, res, next) => {
   const { id } = req.params;
-  if (id) {
-    res.redirect(`upi://pay?pn=UPAYI&pa=Q360804552@ybl&cu=INR&am=100&tn=${id}`);
+
+  if (!id) return next(createHttpError(400, "provide transaction id."));
+  const tId = id.substring(1);
+
+  const transaction = await prisma.transaction.findUnique({
+    where: {
+      id: Number(tId),
+    },
+    select: {
+      id: true,
+      amount: true,
+      upi: {
+        select: {
+          upiId: true,
+        },
+      },
+    },
+  });
+
+  if (transaction) {
+    res.redirect(
+      `upi://pay?pn=UPAYI&pa=${transaction?.upi.upiId}&cu=INR&am=${transaction?.amount}&tn=t${transaction?.id}`
+    );
   } else {
-    res.json({ message: "provide id for payment" });
+    res.json({ message: "provide valid transaction id for payment" });
   }
 });
 
 // use root routes
 app.use("/api/auth", authRouter);
 app.use("/api/utils", utilsRouter);
+app.use("/api/pay", payRouter);
 app.use("/api/store/address", storeAddressRouter);
 app.use("/api/store/link", storeLinkRouter);
 app.use("/api/store/photo", storePhotoRouter);
